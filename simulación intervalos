@@ -4,25 +4,23 @@ library(tidyquant)
 
 # INTERFAZ DE USUARIO PARA ENTRAR Y VISUALIZAR LOS DATOS
 ui <- fluidPage(
-
-    # TÃTULO DE LA APLICACIÃN
-    titlePanel(h2("SimulaciÃ³n de intervalos de confianza a partir de una distribuciÃ³n normal.")),
+    # TÍTULO DE LA APLICACIÓN
+    titlePanel(h2("Simulación de intervalos de confianza a partir de una distribución normal.")),
 
     # Entrada de datos 
-    
     sidebarLayout(
         sidebarPanel("Datos.",
             numericInput("media", 
                          "Media", 
                          value = 0),
             numericInput("ds", 
-                         "Desv. EstÃ¡ndar", 
+                         "Desv. Estándar", 
                          value = 1),
             numericInput("n", 
-                         "TamaÃ±o muestra", 
+                         "Tamaño muestra", 
                          value = 30, min = 1),
-             sliderInput("significaciÃ³n",
-                        "Nivel de significaciÃ³n:",
+             sliderInput("significación",
+                        "Nivel de significación:",
                         min = 0.01,
                         max = 1,
                         value = 0.05),
@@ -32,7 +30,6 @@ ui <- fluidPage(
             
         ),
         
-           
         # Show a plot of the generated distribution
         mainPanel(
             plotOutput("grafica")
@@ -50,17 +47,13 @@ server <- function(input, output) {
     muestra <- function() rnorm(input$n, input$media, input$ds)
    
     output$grafica <- renderPlot({
-        
-        
-        # A PARTIR DE AQUÃ NO SE CAMBIA NADA
-       
-         intervalos <-  matrix(nrow = input$no_experimentos, ncol = 2)
-        for (i in seq(1:input$no_experimentos)) {
-            muestra2 <- muestra()
-            intervalos[i,1] <-  (mean(muestra2))-qnorm(input$significaciÃ³n/2, 
-                                                       lower.tail = FALSE)*input$ds/sqrt(input$n)
-            intervalos[i,2] <- (mean(muestra2))+qnorm(input$significaciÃ³n/2, 
-                                                      lower.tail = FALSE)*input$ds/sqrt(input$n)
+                                 intervalos <-  matrix(nrow = input$no_experimentos, ncol = 2)
+                                                for (i in seq(1:input$no_experimentos)) {
+                                                    muestra2 <- muestra()
+                                                    intervalos[i,1] <-  (mean(muestra2))-qnorm(input$significación/2, 
+                                                                        lower.tail = FALSE)*input$ds/sqrt(input$n)
+                                                    intervalos[i,2] <- (mean(muestra2))+qnorm(input$significación/2, 
+                                                                        lower.tail = FALSE)*input$ds/sqrt(input$n)
         }
         grafico <-  data.frame(intervalos)%>%
                             mutate(y = seq(1, input$no_experimentos), 
@@ -68,14 +61,18 @@ server <- function(input, output) {
         amplitud <- round(grafico[[1,2]]-grafico[[1,1]],1)
         
         ggplot(data = grafico)+
-            geom_segment(aes(x=X1,xend=X2,y=y,yend=y), color = ifelse(grafico$contiene == "red", "blue", "red") , size= 1,  show.legend = FALSE)+
+            geom_segment(aes(x = X1, xend = X2, y = y,yend = y), 
+                                  color = ifelse(grafico$contiene == "red", "
+                                  blue", "red") , 
+                                  size= 1,  
+                                  show.legend = FALSE)+
             geom_vline(xintercept = input$media, size = 1, color = "#e68a00")+
             theme_tq()+
             labs(
                 title = "Intervalos de confianza.",
                 subtitle = paste("Amplitud de los intervalos =", amplitud),
-                x = "LÃ­mites inferior y superior del intervalo",
-                y = "NÃ³. de intervalos")
+                x = "Límites inferior y superior del intervalo",
+                y = "No. de intervalos")
  
  })
 
